@@ -8,7 +8,7 @@
 // as they are.
 // Usage: node brand.mjs [packages directory] [templates directory]
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative } from 'node:path';
 
@@ -83,10 +83,17 @@ rule('people placeholders (email sync)', assets, /`https:\/\/twentyhq\.github\.i
 // choice leaves the workspace menu
 rule('open records in (the workspace menu)', assets,
   /\w+&&\(0,\w+\.jsx\)\(\w+\.ActionItem,\{startIcon:\(0,\w+\.jsx\)\(\w+,\{Icon:\w+\[\w+\]\.Icon\}\),description:\w+\._\(\w+\[\w+\]\.label\),page:"open-record-in",children:\w+\._\(\{id:"C39K59"\}\)\}\),/g, '', 1);
+// a related record's card unfolds into every field of it, whatever the record's page shows: it stays
+// the record's name, which opens its page
+rule('related record cards (no unfolding)', assets,
+  /\(0,\w+\.jsx\)\(\w+,\{onClick:\w+,"data-testid":"expand-button",children:\(0,\w+\.jsx\)\(\w+,\{className:"displayOnHover",children:\(0,\w+\.jsx\)\(\w+,\{emphasis:"subtle","aria-label":\w+\._\(\{id:"bH7fqD"\}\),children:\(0,\w+\.jsx\)\(\w+,\{\}\)\}\)\}\)\}\),/g, '', 1);
 rule('data processing agreement link', assets, '"https://twenty.com/legal/dpa"', `"${brand.legal}/legal/dpa"`, 1);
 rule('help links', [...assets, ...inDir(shared)], /"https:\/\/docs\.twenty\.com(?:\/[^"]*)?"/g, `"${brand.help}"`, 3);
-// company logos from the instance itself (the enrichment module's icons route), not Twenty's service
-rule('company logos', [...assets, ...inDir(shared)], 'https://twenty-icons.com', brand.icons, 5);
+// company logos from the instance itself (the enrichment module's icons route), not Twenty's service.
+// The web app takes an address without a host for one of its files (/files/…), so it gets the page's
+// origin; the server's copies, which never draw a logo, keep the path
+rule('company logos', assets, '`https://twenty-icons.com/${', `\`\${window.location.origin}${brand.icons}/\${`, 1);
+rule('company logos (the server\'s copies)', inDir(shared), 'https://twenty-icons.com', brand.icons, 4);
 
 // emails: logo, footer and text
 const emailCode = named(emails, /^index\.m?js$/);
@@ -145,6 +152,40 @@ if (failures.length) {
   process.exit(1);
 }
 
+// A changed file of the web app takes a name of its own (Twenty's plus our version), and so does
+// every file that names one, up to index.html, which is never kept: browsers keep a file by its name
+// (Cloudflare lets them for hours), so under Twenty's name people would go on running the old one.
+const version = readFileSync(new URL('./VERSION', import.meta.url), 'utf8').trim().replace(/^.*-olcrm\./, 'olcrm');
+// a file's name as another names it (some have dots: index.module-….js)
+const reference = /[\w$.-]+\.(?:js|css)\b/g;
+const renamed = new Map();
+const rename = (path) => renamed.set(basename(path), basename(path).replace(/\.(js|css)$/, `-${version}.$1`));
+for (const path of contents.keys()) if (path.startsWith(`${front}/assets/`) && /\.(js|css)$/.test(path)) rename(path);
+const chunks = inDir(`${front}/assets`, (path) => /\.(js|css)$/.test(path));
+for (let more = true; more; ) {
+  more = false;
+  for (const path of chunks) {
+    if (renamed.has(basename(path))) continue;
+    if ([...read(path).matchAll(reference)].some(([name]) => renamed.has(name))) {
+      rename(path);
+      more = true;
+    }
+  }
+}
+for (const path of [...chunks, `${front}/index.html`]) {
+  const before = read(path);
+  const after = before.replace(reference, (name) => renamed.get(name) ?? name);
+  if (after !== before) contents.set(path, after);
+}
+for (const [path, content] of [...contents]) {
+  const name = renamed.get(basename(path));
+  if (!name || dirname(path) !== `${front}/assets`) continue;
+  contents.delete(path);
+  contents.set(join(dirname(path), name), content);
+  rmSync(path);
+}
+console.log(`${renamed.size} files of the web app renamed (-${version})`);
+
 // write (a file with the client's name also as its template, for runtime.cjs), then make sure every
 // changed script still parses
 const scratch = mkdtempSync(join(tmpdir(), 'brand-'));
@@ -170,7 +211,7 @@ console.log(`\n${contents.size} files branded and checked, ${withName.length} of
 
 // what still names Twenty's sites in the web app (admin settings, by design)
 const left = new Map();
-for (const path of assets) {
+for (const path of walk(`${front}/assets`).filter(code)) {
   for (const [url] of read(path).matchAll(/https?:\/\/[a-z0-9.-]*twenty[a-z0-9.-]*\.[a-z]+[^"'`\s)]*/gi)) {
     left.set(url, [...(left.get(url) ?? []), basename(path)]);
   }

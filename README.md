@@ -23,7 +23,13 @@ source is at the version named in [VERSION](VERSION).
   Twenty's icon service, and the help search (which sent questions to Twenty's
   documentation server) is gone from the AI chat and from MCP.
 
-The workspace menu has no "Open records in": where records open is set for the client, on every object.
+The workspace menu has no "Open records in": where records open is set for the client, on every
+object. A related record's card (a person's company) doesn't unfold into all of its fields: its
+name opens its page, where the client's layout shows what matters.
+
+Every file of the web app this changes, and every file that names one, gets a name of its own
+(`…-olcrm<n>.js`): browsers keep files by name, and under Twenty's they'd go on running the
+unchanged one.
 
 Settings pages only workspace admins see keep Twenty's wording.
 
@@ -35,7 +41,7 @@ name in.
 ## Build
 
 ```sh
-docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.3 .
+docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.4 .
 docker run -e BRAND_NAME="Acme CRM" …   # the client's name
 ```
 

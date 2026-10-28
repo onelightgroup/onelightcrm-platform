@@ -1,7 +1,7 @@
 # The OneLightCRM platform image: Twenty's released image with our branding (brand.mjs, brand.json),
 # the client's name where users see one (BRAND_NAME, runtime.cjs) and with every call to Twenty's
 # own services switched off.
-# docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.3 .
+# docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.4 .
 ARG TWENTY_VERSION=v2.50.1
 FROM twentycrm/twenty:${TWENTY_VERSION} AS twenty
 
@@ -17,7 +17,7 @@ FROM twenty
 COPY --chown=1000:1000 --from=icons /brand/icons /app/packages/twenty-server/dist/front/images/icons
 COPY --chown=1000:1000 assets/logo.svg /app/packages/twenty-server/dist/front/images/integrations/twenty-logo.svg
 COPY --chown=1000:1000 runtime.cjs /app/brand/runtime.cjs
-COPY --chown=1000:1000 brand.mjs brand.json /tmp/brand/
+COPY --chown=1000:1000 brand.mjs brand.json VERSION /tmp/brand/
 RUN node /tmp/brand/brand.mjs /app/packages /app/brand/templates && rm -rf /tmp/brand
 # nothing to Twenty: no telemetry, no marketplace catalog; company logos come from the instance
 # itself (brand.json `icons`, the enrichment module's route), so the web app may ask for them
