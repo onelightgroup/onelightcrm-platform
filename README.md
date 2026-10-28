@@ -23,6 +23,8 @@ source is at the version named in [VERSION](VERSION).
   Twenty's icon service, and the help search (which sent questions to Twenty's
   documentation server) is gone from the AI chat and from MCP.
 
+The workspace menu has no "Open records in": where records open is set for the client, on every object.
+
 Settings pages only workspace admins see keep Twenty's wording.
 
 [brand.mjs](brand.mjs) makes the changes, each rule expecting the exact number of places it
@@ -33,7 +35,7 @@ name in.
 ## Build
 
 ```sh
-docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.2 .
+docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.3 .
 docker run -e BRAND_NAME="Acme CRM" …   # the client's name
 ```
 

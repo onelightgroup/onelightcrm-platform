@@ -1,7 +1,7 @@
 # The OneLightCRM platform image: Twenty's released image with our branding (brand.mjs, brand.json),
 # the client's name where users see one (BRAND_NAME, runtime.cjs) and with every call to Twenty's
 # own services switched off.
-# docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.2 .
+# docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.3 .
 ARG TWENTY_VERSION=v2.50.1
 FROM twentycrm/twenty:${TWENTY_VERSION} AS twenty
 

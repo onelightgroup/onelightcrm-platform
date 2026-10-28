@@ -79,6 +79,10 @@ rule('sign-in legal links', assets, 'lo="https://twenty.com"', `lo="${brand.lega
 rule('sign-in legal links, without a language', assets, 'return new URL(a?`/${n}/${t}`:`/${t}`,lo).toString()', 'return new URL(`/${t}`,lo).toString()', 1);
 rule('workspace logo placeholder', assets, '"https://twentyhq.github.io/placeholder-images/workspaces/twenty-logo.png"', webIcon, 10);
 rule('people placeholders (email sync)', assets, /`https:\/\/twentyhq\.github\.io\/placeholder-images\/people\/image-\$\{\w+\}\.png`/g, webIcon, 1);
+// where records open is the client's (olcrm sets it on every object), not each person's: the
+// choice leaves the workspace menu
+rule('open records in (the workspace menu)', assets,
+  /\w+&&\(0,\w+\.jsx\)\(\w+\.ActionItem,\{startIcon:\(0,\w+\.jsx\)\(\w+,\{Icon:\w+\[\w+\]\.Icon\}\),description:\w+\._\(\w+\[\w+\]\.label\),page:"open-record-in",children:\w+\._\(\{id:"C39K59"\}\)\}\),/g, '', 1);
 rule('data processing agreement link', assets, '"https://twenty.com/legal/dpa"', `"${brand.legal}/legal/dpa"`, 1);
 rule('help links', [...assets, ...inDir(shared)], /"https:\/\/docs\.twenty\.com(?:\/[^"]*)?"/g, `"${brand.help}"`, 3);
 // company logos from the instance itself (the enrichment module's icons route), not Twenty's service
