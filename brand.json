@@ -1,0 +1,11 @@
+{
+  "name": "OneLightCRM",
+  "description": "OneLightCRM",
+  "color": "#3149EF",
+  "website": "https://onelight.cloud",
+  "help": "https://onelight.cloud/help",
+  "legal": "https://onelight.cloud",
+  "source": "https://github.com/onelightgroup/onelightcrm-platform",
+  "icons": "https://icons.onelight.cloud",
+  "operator": "OneLightCRM"
+}

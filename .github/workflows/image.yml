@@ -1,0 +1,46 @@
+# The platform image: built on every push, published once per VERSION, public so clusters pull it
+# without a secret.
+name: Image
+
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        id: version
+        run: |
+          version="$(cat VERSION)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "twenty=${version%-olcrm.*}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # a published version never changes: clients pin it
+      - name: Published already?
+        id: published
+        run: |
+          if docker buildx imagetools inspect "ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            echo "yes=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          build-args: TWENTY_VERSION=${{ steps.version.outputs.twenty }}
+          push: ${{ github.ref == 'refs/heads/main' && steps.published.outputs.yes != 'true' }}
+          provenance: false
+          tags: ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
