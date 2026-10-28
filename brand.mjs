@@ -81,7 +81,8 @@ rule('workspace logo placeholder', assets, '"https://twentyhq.github.io/placehol
 rule('people placeholders (email sync)', assets, /`https:\/\/twentyhq\.github\.io\/placeholder-images\/people\/image-\$\{\w+\}\.png`/g, webIcon, 1);
 rule('data processing agreement link', assets, '"https://twenty.com/legal/dpa"', `"${brand.legal}/legal/dpa"`, 1);
 rule('help links', [...assets, ...inDir(shared)], /"https:\/\/docs\.twenty\.com(?:\/[^"]*)?"/g, `"${brand.help}"`, 3);
-rule('company logos (off: ALLOW_REQUESTS_TO_TWENTY_ICONS)', [...assets, ...inDir(shared)], 'https://twenty-icons.com', brand.icons, 5);
+// company logos from the instance itself (the enrichment module's icons route), not Twenty's service
+rule('company logos', [...assets, ...inDir(shared)], 'https://twenty-icons.com', brand.icons, 5);
 
 // emails: logo, footer and text
 const emailCode = named(emails, /^index\.m?js$/);

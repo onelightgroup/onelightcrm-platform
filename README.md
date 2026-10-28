@@ -18,8 +18,9 @@ source is at the version named in [VERSION](VERSION).
   source and registry name.
 - Emails (invitations, verification, password resets): our logo on top, the client's name in the
   text, our footer.
-- Nothing goes to Twenty: telemetry and the marketplace catalog are off, company logos no longer
-  come from Twenty's icon service, and the help search (which sent questions to Twenty's
+- Nothing goes to Twenty: telemetry and the marketplace catalog are off, company logos come from
+  the instance itself (`/s/icons/<domain>`, a route of OneLightCRM's enrichment module) instead of
+  Twenty's icon service, and the help search (which sent questions to Twenty's
   documentation server) is gone from the AI chat and from MCP.
 
 Settings pages only workspace admins see keep Twenty's wording.
@@ -32,7 +33,7 @@ name in.
 ## Build
 
 ```sh
-docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.1 .
+docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.2 .
 docker run -e BRAND_NAME="Acme CRM" …   # the client's name
 ```
 

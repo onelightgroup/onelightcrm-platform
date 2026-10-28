@@ -6,6 +6,6 @@
   "help": "https://onelight.cloud/help",
   "legal": "https://onelight.cloud",
   "source": "https://github.com/onelightgroup/onelightcrm-platform",
-  "icons": "https://icons.onelight.cloud",
+  "icons": "/s/icons",
   "operator": "OneLightCRM"
 }
