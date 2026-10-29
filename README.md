@@ -45,7 +45,7 @@ name in.
 ## Build
 
 ```sh
-docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.8 .
+docker build --build-arg TWENTY_VERSION="$(sed 's/-olcrm.*//' VERSION)" -t ghcr.io/onelightgroup/onelightcrm-platform:"$(cat VERSION)" .
 docker run -e BRAND_NAME="Acme CRM" -e BRAND_LOGO=https://acme.example/logo.png …   # the client's name and logo
 ```
 
@@ -54,8 +54,8 @@ as `ghcr.io/onelightgroup/onelightcrm-platform:<VERSION>`.
 
 ## Upgrading Twenty
 
-Set the new Twenty version in `VERSION` (and `TWENTY_VERSION` in the Dockerfile), restart the
-count at `-olcrm.1`, and build. A rule whose matches changed fails the build with its name: look
+Set the new Twenty version in `VERSION`, the only place it's written, restart the count at
+`-olcrm.1`, and build. A rule whose matches changed fails the build with its name: look
 at that place in the new version and update the rule.
 
 ## Licence

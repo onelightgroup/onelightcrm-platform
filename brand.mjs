@@ -71,9 +71,10 @@ const mailIcon = (path) => `((process.env.SERVER_URL||"").replace(/\\/$/,"")+"${
 rule('page title', [`${front}/index.html`], '<title>Twenty</title>', `<title>${NAME}</title>`, 1);
 rule('page previews', [`${front}/index.html`], 'content="Twenty"', `content="${NAME}"`, 2);
 rule('page description', [`${front}/index.html`], 'A modern open-source CRM', brand.description, 3);
-// the page names no icon, so the tab is empty until the web app sets one (and /favicon.ico is the page)
-rule('page icon', [`${front}/index.html`], '<link rel="apple-touch-icon" href="/images/icons/ios/192.png" />',
-  `<link rel="icon" href="${ICON}" />\n    <link rel="apple-touch-icon" href="/images/icons/ios/192.png" />`, 1);
+// the tab's icon from the first paint: the page's own (the web app takes it over once loaded,
+// data-rh) is the client's, not ours, which the tab would show until then
+rule('page icon', [`${front}/index.html`], /(<link\s+rel="icon"\s+type="image\/x-icon"\s+)href="\/images\/icons\/android\/android-launchericon-48-48\.png"/g,
+  (_, link) => `${link}href="${ICON}"`, 1);
 rule('preview images (Twenty\'s)', [`${front}/index.html`], /\n\s*<meta\s+(?:property="og:image"|name="twitter:image")\s+content="[^"]*"\s*\/>/g, '', 2);
 rule('app manifest', [`${front}/manifest.json`], /"(short_name|name)": "Twenty"/g, (_, key) => `"${key}": "${NAME}"`, 2);
 
