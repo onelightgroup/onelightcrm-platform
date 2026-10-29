@@ -17,6 +17,8 @@ const root = process.argv[2] ?? '/app/packages';
 const templates = process.argv[3] ?? '/app/brand/templates';
 // where the client's name goes; runtime.cjs writes it in, brand.name until then
 const NAME = '__BRAND_NAME__';
+// where the client's logo goes (BRAND_LOGO, an https address), nothing until then: ours stands in
+const LOGO = '__BRAND_LOGO__';
 const server = `${root}/twenty-server/dist`;
 const front = `${server}/front`;
 const emails = `${root}/twenty-emails/dist`;
@@ -57,7 +59,10 @@ const named = (dir, pattern) => inDir(dir, (path) => pattern.test(relative(dir, 
 const word = /\bTwenty\b/g;
 // an image of ours, from the instance itself: the web app's origin, or SERVER_URL in emails
 const icon = '/images/icons/android/android-launchericon-192-192.png';
-const webIcon = `(window.location.origin+"${icon}")`;
+const ourIcon = `(window.location.origin+"${icon}")`;
+// the workspace's logo until it's loaded (the tab's icon, the sign-in page, the sidebar), and for a
+// workspace without one: the client's, or ours
+const webIcon = `("${LOGO}"||${ourIcon})`;
 const mailIcon = (path) => `((process.env.SERVER_URL||"").replace(/\\/$/,"")+"${path}")`;
 
 // the page itself: title, link previews, the installed app
@@ -78,7 +83,7 @@ rule('timeline: changes without a person', assets, '.lastName}`:"Twenty"', `.las
 rule('sign-in legal links', assets, 'lo="https://twenty.com"', `lo="${brand.legal}"`, 1);
 rule('sign-in legal links, without a language', assets, 'return new URL(a?`/${n}/${t}`:`/${t}`,lo).toString()', 'return new URL(`/${t}`,lo).toString()', 1);
 rule('workspace logo placeholder', assets, '"https://twentyhq.github.io/placeholder-images/workspaces/twenty-logo.png"', webIcon, 10);
-rule('people placeholders (email sync)', assets, /`https:\/\/twentyhq\.github\.io\/placeholder-images\/people\/image-\$\{\w+\}\.png`/g, webIcon, 1);
+rule('people placeholders (email sync)', assets, /`https:\/\/twentyhq\.github\.io\/placeholder-images\/people\/image-\$\{\w+\}\.png`/g, ourIcon, 1);
 // where records open is the client's (olcrm sets it on every object), not each person's: the
 // choice leaves the workspace menu
 rule('open records in (the workspace menu)', assets,
@@ -195,12 +200,12 @@ for (const [path, content] of [...contents]) {
 }
 console.log(`${renamed.size} files of the web app renamed (-${version})`);
 
-// write (a file with the client's name also as its template, for runtime.cjs), then make sure every
-// changed script still parses
+// write (a file with the client's name or logo also as its template, for runtime.cjs), then make
+// sure every changed script still parses
 const scratch = mkdtempSync(join(tmpdir(), 'brand-'));
 const withName = [];
 for (const [path, template] of contents) {
-  const content = template.split(NAME).join(brand.name);
+  const content = template.split(NAME).join(brand.name).split(LOGO).join('');
   if (content !== template) {
     const copy = join(templates, relative(root, path));
     mkdirSync(dirname(copy), { recursive: true });
@@ -215,7 +220,7 @@ for (const [path, template] of contents) {
   execFileSync(process.execPath, ['--check', checked], { stdio: 'inherit' });
 }
 mkdirSync(templates, { recursive: true });
-writeFileSync(join(templates, 'manifest.json'), `${JSON.stringify({ root, placeholder: NAME, name: brand.name, files: withName }, null, 2)}\n`);
+writeFileSync(join(templates, 'manifest.json'), `${JSON.stringify({ root, placeholder: NAME, name: brand.name, logoPlaceholder: LOGO, files: withName }, null, 2)}\n`);
 console.log(`\n${contents.size} files branded and checked, ${withName.length} of them name the client`);
 
 // what still names Twenty's sites in the web app (admin settings, by design)

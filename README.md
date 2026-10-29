@@ -11,7 +11,9 @@ source is at the version named in [VERSION](VERSION).
   translation of the web app, emails and server messages in all languages, the AI chat's and
   agents' prompts, the MCP server's name, instructions and card) it is the client's, `BRAND_NAME`
   in the server's and worker's environment (up to 40 letters, digits, spaces, dots and hyphens),
-  or OneLightCRM without it. [runtime.cjs](runtime.cjs) writes it in when Twenty starts, from
+  or OneLightCRM without it. `BRAND_LOGO` (an https address) is the client's logo where the web
+  app shows one before the workspace's is loaded (the tab's icon, the sign-in page, the sidebar),
+  so ours doesn't flash first; without it ours stands in. [runtime.cjs](runtime.cjs) writes it in when Twenty starts, from
   copies the build keeps with a placeholder.
 - Ours: the icons and the sign-in page's logo (beside the workspace's), the privacy and terms
   links, help links, the workspace logo placeholder, the email footer, and the MCP card's website,
@@ -42,8 +44,8 @@ name in.
 ## Build
 
 ```sh
-docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.5 .
-docker run -e BRAND_NAME="Acme CRM" …   # the client's name
+docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.6 .
+docker run -e BRAND_NAME="Acme CRM" -e BRAND_LOGO=https://acme.example/logo.png …   # the client's name and logo
 ```
 
 CI builds `VERSION` (`<Twenty version>-olcrm.<n>`) on every push to `main` and publishes it once,
