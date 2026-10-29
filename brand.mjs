@@ -133,6 +133,15 @@ const registryName = `${host}/${brand.name.toLowerCase()}`;
 rule('MCP card: registry name', mcpCard, "name: 'com.twenty/twenty'", `name: '${registryName}'`, 1);
 rule('MCP card: source', mcpCard, "url: 'https://github.com/twentyhq/twenty'", `url: '${brand.source || brand.website}'`, 1);
 
+// where an object's records open, as the workspace set it: Twenty keeps that on its own objects as an
+// override and answers with the value under it (it does read the override for isActive)
+rule('objects open where the workspace set them', named(server, /^engine\/metadata-modules\/object-metadata\/utils\/from-object-metadata-entity-to-object-metadata-dto\.util\.js$/),
+  '        openRecordIn: entity.openRecordIn,\n',
+  `        openRecordIn: (()=>{
+            const overrideValue = (0, _readauthoredoverridepropertyutil.readAuthoredOverrideProperty)({ metadataName: 'objectMetadata', overrides: entity.overrides, path: ['openRecordIn'], authorContext: { ownerApplicationUniversalIdentifier: undefined } });
+            return typeof overrideValue === 'string' ? overrideValue : entity.openRecordIn;
+        })(),\n`, 1);
+
 // the client's name goes in before anything reads those files: first thing in Twenty's server, its
 // worker and its commands
 const entries = ['main.js', 'queue-worker/queue-worker.js', 'command/command.js'].map((path) => `${server}/${path}`);
