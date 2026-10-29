@@ -28,7 +28,8 @@ source is at the version named in [VERSION](VERSION).
 The workspace menu has no "Open records in": where records open is set for the client, on every
 object, Twenty's own too (the server answers with the workspace's setting instead of the one under
 it). A related record's card (a person's company) doesn't unfold into all of its fields: its
-name opens its page, where the client's layout shows what matters.
+name opens its page, where the client's layout shows what matters. Settings has no Documentation
+entry: Twenty's user guide is written for workspace admins, and clients aren't.
 
 Every file of the web app this changes, and every file that names one, gets a name of its own
 (`…-olcrm<n>.js`): browsers keep files by name, and under Twenty's they'd go on running the
@@ -44,7 +45,7 @@ name in.
 ## Build
 
 ```sh
-docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.7 .
+docker build --build-arg TWENTY_VERSION=v2.50.1 -t ghcr.io/onelightgroup/onelightcrm-platform:v2.50.1-olcrm.8 .
 docker run -e BRAND_NAME="Acme CRM" -e BRAND_LOGO=https://acme.example/logo.png …   # the client's name and logo
 ```
 

@@ -102,6 +102,10 @@ rule('open records in (the workspace menu)', assets,
 // the record's name, which opens its page
 rule('related record cards (no unfolding)', assets,
   /\(0,\w+\.jsx\)\(\w+,\{onClick:\w+,"data-testid":"expand-button",children:\(0,\w+\.jsx\)\(\w+,\{className:"displayOnHover",children:\(0,\w+\.jsx\)\(\w+,\{emphasis:"subtle","aria-label":\w+\._\(\{id:"bH7fqD"\}\),children:\(0,\w+\.jsx\)\(\w+,\{\}\)\}\)\}\)\}\),/g, '', 1);
+// Settings' Documentation entry (under Other, beside Logout, for everyone) opens Twenty's user guide,
+// written for workspace admins: clients aren't, and we have no guide of theirs yet
+rule('settings menu: documentation (hidden)', assets,
+  /\{(label:\w+\._\(\{id:"TvY\/XA"\}\),onClick:\(\)=>\w+\(\w+\(\{locale:\w+\?\.locale\}\)\),Icon:\w+)\}/g, (_, item) => `{${item},isHidden:!0}`, 1);
 rule('data processing agreement link', assets, '"https://twenty.com/legal/dpa"', `"${brand.legal}/legal/dpa"`, 1);
 rule('help links', [...assets, ...inDir(shared)], /"https:\/\/docs\.twenty\.com(?:\/[^"]*)?"/g, `"${brand.help}"`, 3);
 // company logos from the instance itself (the enrichment module's icons route), not Twenty's service.
