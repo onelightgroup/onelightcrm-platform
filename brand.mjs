@@ -19,6 +19,8 @@ const templates = process.argv[3] ?? '/app/brand/templates';
 const NAME = '__BRAND_NAME__';
 // where the client's logo goes (BRAND_LOGO, an https address), nothing until then: ours stands in
 const LOGO = '__BRAND_LOGO__';
+// the tab's icon from the first paint: the client's logo, or ours
+const ICON = '__BRAND_ICON__';
 const server = `${root}/twenty-server/dist`;
 const front = `${server}/front`;
 const emails = `${root}/twenty-emails/dist`;
@@ -69,6 +71,9 @@ const mailIcon = (path) => `((process.env.SERVER_URL||"").replace(/\\/$/,"")+"${
 rule('page title', [`${front}/index.html`], '<title>Twenty</title>', `<title>${NAME}</title>`, 1);
 rule('page previews', [`${front}/index.html`], 'content="Twenty"', `content="${NAME}"`, 2);
 rule('page description', [`${front}/index.html`], 'A modern open-source CRM', brand.description, 3);
+// the page names no icon, so the tab is empty until the web app sets one (and /favicon.ico is the page)
+rule('page icon', [`${front}/index.html`], '<link rel="apple-touch-icon" href="/images/icons/ios/192.png" />',
+  `<link rel="icon" href="${ICON}" />\n    <link rel="apple-touch-icon" href="/images/icons/ios/192.png" />`, 1);
 rule('preview images (Twenty\'s)', [`${front}/index.html`], /\n\s*<meta\s+(?:property="og:image"|name="twitter:image")\s+content="[^"]*"\s*\/>/g, '', 2);
 rule('app manifest', [`${front}/manifest.json`], /"(short_name|name)": "Twenty"/g, (_, key) => `"${key}": "${NAME}"`, 2);
 
@@ -82,6 +87,11 @@ rule('page title fallback', assets, 'default:return"Twenty"}', `default:return"$
 rule('timeline: changes without a person', assets, '.lastName}`:"Twenty"', `.lastName}\`:"${NAME}"`, 1);
 rule('sign-in legal links', assets, 'lo="https://twenty.com"', `lo="${brand.legal}"`, 1);
 rule('sign-in legal links, without a language', assets, 'return new URL(a?`/${n}/${t}`:`/${t}`,lo).toString()', 'return new URL(`/${t}`,lo).toString()', 1);
+// the tab's icon is the client's logo when it has one: the workspace's comes later, at another
+// address, and the tab would change again for the same picture
+rule('tab icon: the client\'s logo', assets,
+  /rel:"icon",type:"image\/x-icon",href:(\w+\?\.logo\?\w+\(\{imageUrl:\w+\.logo,baseUrl:\w+\}\)\?\?"https:\/\/twentyhq\.github\.io\/placeholder-images\/workspaces\/twenty-logo\.png":\w+)\}/g,
+  (_, workspace) => `rel:"icon",type:"image/x-icon",href:"${LOGO}"||(${workspace})}`, 1);
 rule('workspace logo placeholder', assets, '"https://twentyhq.github.io/placeholder-images/workspaces/twenty-logo.png"', webIcon, 10);
 rule('people placeholders (email sync)', assets, /`https:\/\/twentyhq\.github\.io\/placeholder-images\/people\/image-\$\{\w+\}\.png`/g, ourIcon, 1);
 // where records open is the client's (olcrm sets it on every object), not each person's: the
@@ -205,7 +215,7 @@ console.log(`${renamed.size} files of the web app renamed (-${version})`);
 const scratch = mkdtempSync(join(tmpdir(), 'brand-'));
 const withName = [];
 for (const [path, template] of contents) {
-  const content = template.split(NAME).join(brand.name).split(LOGO).join('');
+  const content = template.split(NAME).join(brand.name).split(LOGO).join('').split(ICON).join(icon);
   if (content !== template) {
     const copy = join(templates, relative(root, path));
     mkdirSync(dirname(copy), { recursive: true });
@@ -220,7 +230,7 @@ for (const [path, template] of contents) {
   execFileSync(process.execPath, ['--check', checked], { stdio: 'inherit' });
 }
 mkdirSync(templates, { recursive: true });
-writeFileSync(join(templates, 'manifest.json'), `${JSON.stringify({ root, placeholder: NAME, name: brand.name, logoPlaceholder: LOGO, files: withName }, null, 2)}\n`);
+writeFileSync(join(templates, 'manifest.json'), `${JSON.stringify({ root, placeholder: NAME, name: brand.name, logoPlaceholder: LOGO, iconPlaceholder: ICON, icon, files: withName }, null, 2)}\n`);
 console.log(`\n${contents.size} files branded and checked, ${withName.length} of them name the client`);
 
 // what still names Twenty's sites in the web app (admin settings, by design)

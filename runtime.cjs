@@ -24,7 +24,8 @@ try {
   for (const file of manifest.files) {
     const content = readFileSync(join(templates, file), 'utf8')
       .split(manifest.placeholder).join(name)
-      .split(manifest.logoPlaceholder ?? '__BRAND_LOGO__').join(VALID_LOGO.test(logo) ? logo : '');
+      .split(manifest.logoPlaceholder ?? '__BRAND_LOGO__').join(VALID_LOGO.test(logo) ? logo : '')
+      .split(manifest.iconPlaceholder ?? '__BRAND_ICON__').join(VALID_LOGO.test(logo) ? logo : manifest.icon);
     const target = join(manifest.root, file);
     if (readFileSync(target, 'utf8') === content) continue;
     // whole files only: another process may be reading them
