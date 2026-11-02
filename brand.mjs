@@ -86,14 +86,18 @@ rule('web app translations', catalogs, word, NAME, 'some');
 const assets = inDir(`${front}/assets`);
 rule('page title fallback', assets, 'default:return"Twenty"}', `default:return"${NAME}"}`, 1);
 rule('timeline: changes without a person', assets, '.lastName}`:"Twenty"', `.lastName}\`:"${NAME}"`, 1);
-rule('sign-in legal links', assets, 'lo="https://twenty.com"', `lo="${brand.legal}"`, 1);
-rule('sign-in legal links, without a language', assets, 'return new URL(a?`/${n}/${t}`:`/${t}`,lo).toString()', 'return new URL(`/${t}`,lo).toString()', 1);
+// (minified names change between versions, and `$` is one: [\w$]+)
+rule('sign-in legal links', assets, /([\w$]+)="https:\/\/twenty\.com"(?=,[\w$]+=\([\w$]+,[\w$]+\)=>\{const [\w$]+=new Intl\.Locale)/g,
+  (_, base) => `${base}="${brand.legal}"`, 1);
+rule('sign-in legal links, without a language', assets,
+  /return new URL\([\w$]+\?`\/\$\{[\w$]+\}\/\$\{([\w$]+)\}`:`\/\$\{\1\}`,([\w$]+)\)\.toString\(\)/g,
+  (_, path, base) => `return new URL(\`/\${${path}}\`,${base}).toString()`, 1);
 // the tab's icon is the client's logo when it has one: the workspace's comes later, at another
 // address, and the tab would change again for the same picture
 rule('tab icon: the client\'s logo', assets,
   /rel:"icon",type:"image\/x-icon",href:(\w+\?\.logo\?\w+\(\{imageUrl:\w+\.logo,baseUrl:\w+\}\)\?\?"https:\/\/twentyhq\.github\.io\/placeholder-images\/workspaces\/twenty-logo\.png":\w+)\}/g,
   (_, workspace) => `rel:"icon",type:"image/x-icon",href:"${LOGO}"||(${workspace})}`, 1);
-rule('workspace logo placeholder', assets, '"https://twentyhq.github.io/placeholder-images/workspaces/twenty-logo.png"', webIcon, 10);
+rule('workspace logo placeholder', assets, '"https://twentyhq.github.io/placeholder-images/workspaces/twenty-logo.png"', webIcon, 11);
 rule('people placeholders (email sync)', assets, /`https:\/\/twentyhq\.github\.io\/placeholder-images\/people\/image-\$\{\w+\}\.png`/g, ourIcon, 1);
 // where records open is the client's (olcrm sets it on every object), not each person's: the
 // choice leaves the workspace menu
@@ -102,12 +106,13 @@ rule('open records in (the workspace menu)', assets,
 // a related record's card unfolds into every field of it, whatever the record's page shows: it stays
 // the record's name, which opens its page
 rule('related record cards (no unfolding)', assets,
-  /\(0,\w+\.jsx\)\(\w+,\{onClick:\w+,"data-testid":"expand-button",children:\(0,\w+\.jsx\)\(\w+,\{className:"displayOnHover",children:\(0,\w+\.jsx\)\(\w+,\{emphasis:"subtle","aria-label":\w+\._\(\{id:"bH7fqD"\}\),children:\(0,\w+\.jsx\)\(\w+,\{\}\)\}\)\}\)\}\),/g, '', 1);
+  /\(0,[\w$]+\.jsx\)\([\w$]+,\{onClick:[\w$]+,"data-testid":"expand-button",children:\(0,[\w$]+\.jsx\)\([\w$]+,\{className:"displayOnHover",children:\(0,[\w$]+\.jsx\)\([\w$]+,\{emphasis:"subtle","aria-label":[\w$]+\._\(\{id:"bH7fqD"\}\),children:\(0,[\w$]+\.jsx\)\([\w$]+,\{\}\)\}\)\}\)\}\),/g, '', 1);
 // Settings' Documentation entry (under Other, beside Logout, for everyone) opens Twenty's user guide,
 // written for workspace admins: clients aren't, and we have no guide of theirs yet
 rule('settings menu: documentation (hidden)', assets,
   /\{(label:\w+\._\(\{id:"TvY\/XA"\}\),onClick:\(\)=>\w+\(\w+\(\{locale:\w+\?\.locale\}\)\),Icon:\w+)\}/g, (_, item) => `{${item},isHidden:!0}`, 1);
-rule('data processing agreement link', assets, '"https://twenty.com/legal/dpa"', `"${brand.legal}/legal/dpa"`, 1);
+// Appearance offers a parody theme, "Salesfarce", with an Enterprise badge: not for clients
+rule('appearance: the Salesfarce theme (hidden)', assets, /,\{value:[\w$]+,label:[\w$]+\._\(\{id:"T3H3GG"\}\)\}/g, '', 1);
 rule('help links', [...assets, ...inDir(shared)], /"https:\/\/docs\.twenty\.com(?:\/[^"]*)?"/g, `"${brand.help}"`, 3);
 // company logos from the instance itself (the enrichment module's icons route), not Twenty's service.
 // The web app takes an address without a host for one of its files (/files/…), so it gets the page's
