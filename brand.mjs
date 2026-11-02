@@ -103,6 +103,19 @@ rule('people placeholders (email sync)', assets, /`https:\/\/twentyhq\.github\.i
 // choice leaves the workspace menu
 rule('open records in (the workspace menu)', assets,
   /\w+&&\(0,\w+\.jsx\)\(\w+\.ActionItem,\{startIcon:\(0,\w+\.jsx\)\(\w+,\{Icon:\w+\[\w+\]\.Icon\}\),description:\w+\._\(\w+\[\w+\]\.label\),page:"open-record-in",children:\w+\._\(\{id:"C39K59"\}\)\}\),/g, '', 1);
+// members are ours (the owner account invites them): Invite user leaves the workspace menu, where
+// it led everyone to a Settings page only admins may use
+rule('invite user (the workspace menu)', assets,
+  /\(0,[\w$]+\.jsx\)\([\w$]+\.ActionItem,\{render:\(0,[\w$]+\.jsx\)\([\w$]+,\{to:`\$\{[\w$]+\([\w$]+\.WorkspaceMembersPage\)\}#invite`\}\),startIcon:\(0,[\w$]+\.jsx\)\([\w$]+,\{\}\),children:[\w$]+\._\(\{id:"x1m5RZ"\}\)\}\),/g, '', 1);
+// A front component's code comes with the application token its page took when it opened; a page
+// left open past that token's life (30 minutes) that loads new code (a release changes it) gets a
+// 401 and shows an error until reloaded. It reloads once instead (not twice within a minute), with
+// a fresh token
+rule('front component code: a stale token reloads the page', assets,
+  /catch\(([\w$]+)\)\{([\w$]+)\|\|([\w$]+)\(\1 instanceof Error\?\1:Error\(String\(\1\)\)\)\}\}\)\(\),([\w$]+)\.current=!0/g,
+  (_, error, gone, fail, mounted) =>
+    `catch(${error}){if(!${gone}&&/^Failed to fetch .*: 401( |$)/.test(String(${error}?.message))&&(()=>{try{const k="olcrm:front-component-reload",t=Number(sessionStorage.getItem(k)||0);if(Date.now()-t<6e4)return!1;sessionStorage.setItem(k,String(Date.now()));location.reload();return!0}catch{return!1}})())return;${gone}||${fail}(${error} instanceof Error?${error}:Error(String(${error})))}})(),${mounted}.current=!0`,
+  1);
 // a related record's card unfolds into every field of it, whatever the record's page shows: it stays
 // the record's name, which opens its page
 rule('related record cards (no unfolding)', assets,
