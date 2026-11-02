@@ -111,6 +111,18 @@ rule('workspace menu (gone)', assets,
 rule('workspace menu: its chevron (gone)', assets,
   /(\(0,([\w$]+)\.jsx\)\([\w$]+,\{children:[\w$]+\?\.displayName\?\?""\}\)\}\)\}\)),\(0,\2\.jsx\)\([\w$]+,\{children:\(0,\2\.jsx\)\([\w$]+,\{size:([\w$]+)\.icon\.size\.md,stroke:\3\.icon\.stroke\.sm\}\)\}\)/g,
   (_, kept) => kept, 1);
+// without the menu the workspace's name is no button: no hand, no hover. And its logo is the client's
+// (BRAND_LOGO, an address the browser keeps) when there is one: the workspace's comes at a new
+// address every session, and its initial showed until it loaded
+const drawer = named(`${front}/assets`, /^NavigationDrawerFixedContent-/);
+rule('workspace name: no hand', drawer, /([\w$]+)=\(\)=>\(\{disabled:([\w$]+)\}\)=>\2\?"default":"pointer"/g, (_, style) => `${style}=()=>()=>"default"`, 1);
+rule('workspace name: no hover background', drawer,
+  /([\w$]+)=\(\)=>\(\{disabled:([\w$]+)\}\)=>\2\?"transparent":[\w$]+\.background\.transparent\.lighter/g, (_, style) => `${style}=()=>()=>"transparent"`, 1);
+rule('workspace name: no hover border', drawer,
+  /([\w$]+)=\(\)=>\(\{disabled:([\w$]+)\}\)=>\2\?"transparent":[\w$]+\.border\.color\.medium/g, (_, style) => `${style}=()=>()=>"transparent"`, 1);
+rule('sidebar logo: the client\'s', drawer,
+  /(imageProps:\{alt:[\w$]+\?"":([\w$]+)\?\.displayName\?\?""\},name:\2\?\.displayName\|\|"",colorSeed:[\w$]+\(\2\?\.displayName\),src:)([\w$]+\(\2\?\.logo\?\?)/g,
+  (_, head, _workspace, workspaceLogo) => `${head}"${LOGO}"||${workspaceLogo}`, 1);
 // members are ours (the owner account invites them): Invite user leaves the workspace menu, where
 // it led everyone to a Settings page only admins may use
 rule('invite user (the workspace menu)', assets,

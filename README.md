@@ -32,7 +32,9 @@ name opens its page, where the client's layout shows what matters. Settings has 
 entry: Twenty's user guide is written for workspace admins, and clients aren't. Appearance has no
 "Salesfarce", the parody theme Twenty offers everyone with an Enterprise badge. The workspace menu is
 gone (theme and log out are in Settings; members are ours, invited from the owner account): the
-sidebar keeps the workspace's logo and name. A page left open past its
+sidebar keeps the workspace's logo and name, no longer a button (no hover, no hand), and its
+logo is the client's when `BRAND_LOGO` gives one: the workspace's comes at a new address every
+session, and its initial showed until it loaded. A page left open past its
 application token's life (30 minutes) that loads a component's new code (after a release) reloads
 once, with a fresh token, instead of showing a 401.
 
