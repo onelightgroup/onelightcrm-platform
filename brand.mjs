@@ -103,6 +103,14 @@ rule('people placeholders (email sync)', assets, /`https:\/\/twentyhq\.github\.i
 // choice leaves the workspace menu
 rule('open records in (the workspace menu)', assets,
   /\w+&&\(0,\w+\.jsx\)\(\w+\.ActionItem,\{startIcon:\(0,\w+\.jsx\)\(\w+,\{Icon:\w+\[\w+\]\.Icon\}\),description:\w+\._\(\w+\[\w+\]\.label\),page:"open-record-in",children:\w+\._\(\{id:"C39K59"\}\)\}\),/g, '', 1);
+// the workspace menu goes (theme and log out are in Settings, for everyone; the rest was ours or
+// Twenty's): the workspace's logo and name stay in the sidebar, without the menu or its chevron
+rule('workspace menu (gone)', assets,
+  /(([\w$]+)=\(\{shouldHideLabel:([\w$]+)=!1\}\)=>\{const [\w$]+=[\w$]+\(\),[\w$]+=[\w$]+\?-5:5;)(return\(0,([\w$]+)\.jsxs\)\([\w$]+,\{dropdownId:[\w$]+,type:"menu",children:\[\(0,\5\.jsx\)\([\w$]+\.Trigger,\{nativeButton:!1,render:\(0,\5\.jsx\)\(([\w$]+),\{shouldHideLabel:\3\}\),children:\(0,\5\.jsx\)\(([\w$]+),\{shouldHideLabel:\3\}\)\}\),)/g,
+  (_, head, _name, label, rest, jsx, frame, face) => `${head}return(0,${jsx}.jsx)(${frame},{shouldHideLabel:${label},children:(0,${jsx}.jsx)(${face},{shouldHideLabel:${label}})});${rest}`, 1);
+rule('workspace menu: its chevron (gone)', assets,
+  /(\(0,([\w$]+)\.jsx\)\([\w$]+,\{children:[\w$]+\?\.displayName\?\?""\}\)\}\)\}\)),\(0,\2\.jsx\)\([\w$]+,\{children:\(0,\2\.jsx\)\([\w$]+,\{size:([\w$]+)\.icon\.size\.md,stroke:\3\.icon\.stroke\.sm\}\)\}\)/g,
+  (_, kept) => kept, 1);
 // members are ours (the owner account invites them): Invite user leaves the workspace menu, where
 // it led everyone to a Settings page only admins may use
 rule('invite user (the workspace menu)', assets,

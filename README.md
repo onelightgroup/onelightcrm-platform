@@ -30,8 +30,9 @@ object, Twenty's own too (the server answers with the workspace's setting instea
 it). A related record's card (a person's company) doesn't unfold into all of its fields: its
 name opens its page, where the client's layout shows what matters. Settings has no Documentation
 entry: Twenty's user guide is written for workspace admins, and clients aren't. Appearance has no
-"Salesfarce", the parody theme Twenty offers everyone with an Enterprise badge. The workspace menu
-has no Invite user (members are ours, invited from the owner account). A page left open past its
+"Salesfarce", the parody theme Twenty offers everyone with an Enterprise badge. The workspace menu is
+gone (theme and log out are in Settings; members are ours, invited from the owner account): the
+sidebar keeps the workspace's logo and name. A page left open past its
 application token's life (30 minutes) that loads a component's new code (after a release) reloads
 once, with a fresh token, instead of showing a 401.
 
