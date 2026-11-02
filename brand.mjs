@@ -273,7 +273,8 @@ for (const [path, template] of contents) {
   execFileSync(process.execPath, ['--check', checked], { stdio: 'inherit' });
 }
 mkdirSync(templates, { recursive: true });
-writeFileSync(join(templates, 'manifest.json'), `${JSON.stringify({ root, placeholder: NAME, name: brand.name, logoPlaceholder: LOGO, iconPlaceholder: ICON, icon, files: withName }, null, 2)}\n`);
+// (assets: where runtime.cjs puts the client's logo file, beside the web app's own)
+writeFileSync(join(templates, 'manifest.json'), `${JSON.stringify({ root, assets: relative(root, `${front}/assets`), placeholder: NAME, name: brand.name, logoPlaceholder: LOGO, iconPlaceholder: ICON, icon, files: withName }, null, 2)}\n`);
 console.log(`\n${contents.size} files branded and checked, ${withName.length} of them name the client`);
 
 // what still names Twenty's sites in the web app (admin settings, by design)

@@ -11,7 +11,9 @@ source is at the version named in [VERSION](VERSION).
   translation of the web app, emails and server messages in all languages, the AI chat's and
   agents' prompts, the MCP server's name, instructions and card) it is the client's, `BRAND_NAME`
   in the server's and worker's environment (up to 40 letters, digits, spaces, dots and hyphens),
-  or OneLightCRM without it. `BRAND_LOGO` (an https address) is the client's logo: the tab's icon
+  or OneLightCRM without it. The client's logo is a file (`logo.png`, `.svg`, `.jpg` or `.webp`
+  mounted at `/app/brand/client`), put among the web app's assets under a name of its content and
+  served by the instance, or else `BRAND_LOGO` (an https address): the tab's icon
   from the first paint on, and where the web app shows one before the workspace's is loaded (the
   sign-in page, the sidebar), so nothing flashes; without it ours stands in. [runtime.cjs](runtime.cjs) writes it in when Twenty starts, from
   copies the build keeps with a placeholder.
@@ -33,7 +35,7 @@ entry: Twenty's user guide is written for workspace admins, and clients aren't. 
 "Salesfarce", the parody theme Twenty offers everyone with an Enterprise badge. The workspace menu is
 gone (theme and log out are in Settings; members are ours, invited from the owner account): the
 sidebar keeps the workspace's logo and name, no longer a button (no hover, no hand), and its
-logo is the client's when `BRAND_LOGO` gives one: the workspace's comes at a new address every
+logo is the client's when there is one: the workspace's comes at a new address every
 session, and its initial showed until it loaded. A page left open past its
 application token's life (30 minutes) that loads a component's new code (after a release) reloads
 once, with a fresh token, instead of showing a 401.
