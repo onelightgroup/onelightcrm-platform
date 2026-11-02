@@ -1,8 +1,10 @@
+# check=skip=InvalidDefaultArgInFrom
 # The OneLightCRM platform image: Twenty's released image with our branding (brand.mjs, brand.json),
 # the client's name where users see one (BRAND_NAME, runtime.cjs) and with every call to Twenty's
 # own services switched off.
 # Built on the Twenty that VERSION names (its CI passes it):
 # docker build --build-arg TWENTY_VERSION="$(sed 's/-olcrm.*//' VERSION)" -t ghcr.io/onelightgroup/onelightcrm-platform:"$(cat VERSION)" .
+# no default: VERSION is the only place the Twenty version is written (the check above would want one)
 ARG TWENTY_VERSION
 FROM twentycrm/twenty:${TWENTY_VERSION} AS twenty
 
