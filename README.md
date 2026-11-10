@@ -9,8 +9,7 @@ source is at the version named in [VERSION](VERSION).
 
 - The name: wherever Twenty named itself to users (page title, link previews, app manifest, every
   translation of the web app, emails and server messages in all languages, the AI chat's and
-  agents' prompts, the MCP server's name, instructions and card, the account in an authenticator
-  app for two-factor sign-in) it is the client's, `BRAND_NAME`
+  agents' prompts, the MCP server's name, instructions and card) it is the client's, `BRAND_NAME`
   in the server's and worker's environment (up to 40 letters, digits, spaces, dots and hyphens),
   or OneLightCRM without it. The client's logo is a file (`logo.png`, `.svg`, `.jpg` or `.webp`
   mounted at `/app/brand/client`), put among the web app's assets under a name of its content and
@@ -18,6 +17,8 @@ source is at the version named in [VERSION](VERSION).
   from the first paint on, and where the web app shows one before the workspace's is loaded (the
   sign-in page, the sidebar), so nothing flashes; without it ours stands in. [runtime.cjs](runtime.cjs) writes it in when Twenty starts, from
   copies the build keeps with a placeholder.
+- Two-factor sign-in: an authenticator app names the account "<workspace> CRM" (one owner signs
+  in to every client's), `BRAND_NAME` without a workspace name.
 - Ours: the icons and the sign-in page's logo (beside the workspace's), the privacy and terms
   links, help links, the workspace logo placeholder, the email footer, and the MCP card's website,
   source and registry name.
