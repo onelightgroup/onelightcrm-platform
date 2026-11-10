@@ -179,6 +179,10 @@ rule('AI help search, by name (off)', actionTools, /\n\s*\[\n\s*'search_help_cen
 rule('AI help search, preloaded (off)', named(server, /^engine\/core-modules\/tool-provider\/constants\/common-preload-tools\.const\.js$/),
   /const COMMON_PRELOAD_TOOLS = \[\n\s*'search_help_center'\n\];/g, 'const COMMON_PRELOAD_TOOLS = [];', 1);
 
+// two-factor sign-in: the authenticator app names the account after the client's name (Twenty's
+// was "Twenty - <workspace>")
+rule('2FA issuer', named(server, /^engine\/core-modules\/two-factor-authentication\/two-factor-authentication\.service\.js$/),
+  /`Twenty\$\{workspaceDisplayName \? ` - \$\{workspaceDisplayName\}` : ''\}`/g, `\`${NAME}\``, 2);
 // the MCP server: its name, its instructions to the client's model, its card for directories
 rule('MCP server name', named(server, /^engine\/api\/mcp\/constants\/mcp-server-info\.const\.js$/), "name: 'Twenty MCP Server'", `name: '${NAME} MCP Server'`, 1);
 rule('MCP instructions', named(server, /^engine\/api\/mcp\/utils\/build-mcp-server-instructions\.util\.js$/), word, NAME, 3);

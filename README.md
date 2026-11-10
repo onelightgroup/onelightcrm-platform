@@ -9,7 +9,8 @@ source is at the version named in [VERSION](VERSION).
 
 - The name: wherever Twenty named itself to users (page title, link previews, app manifest, every
   translation of the web app, emails and server messages in all languages, the AI chat's and
-  agents' prompts, the MCP server's name, instructions and card) it is the client's, `BRAND_NAME`
+  agents' prompts, the MCP server's name, instructions and card, the account in an authenticator
+  app for two-factor sign-in) it is the client's, `BRAND_NAME`
   in the server's and worker's environment (up to 40 letters, digits, spaces, dots and hyphens),
   or OneLightCRM without it. The client's logo is a file (`logo.png`, `.svg`, `.jpg` or `.webp`
   mounted at `/app/brand/client`), put among the web app's assets under a name of its content and
