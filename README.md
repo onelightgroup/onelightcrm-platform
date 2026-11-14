@@ -40,7 +40,10 @@ sidebar keeps the workspace's logo and name, no longer a button (no hover, no ha
 logo is the client's when there is one: the workspace's comes at a new address every
 session, and its initial showed until it loaded. A page left open past its
 application token's life (30 minutes) that loads a component's new code (after a release) reloads
-once, with a fresh token, instead of showing a 401.
+once, with a fresh token, instead of showing a 401. Replying to an email, a long reply scrolls in
+its box (it ran past the side panel, its end out of sight and over its attachments), and what one
+writes is kept in the browser for the message it answers until it's sent or emptied (a month at
+most): a reload, or the side panel opened as a page, no longer loses it.
 
 Every file of the web app this changes, and every file that names one, gets a name of its own
 (`…-olcrm<n>.js`): browsers keep files by name, and under Twenty's they'd go on running the
