@@ -249,6 +249,37 @@ rule('objects open where the workspace set them', named(server, /^engine\/metada
             return typeof overrideValue === 'string' ? overrideValue : entity.openRecordIn;
         })(),\n`, 1);
 
+// a shared inbox (a WORKSPACE-scope mailbox, an email group) sends for code with no person behind it
+// (an app's cron or event, an API key), as Twenty's own workflows and agents send: its sendEmail and
+// myConnectedAccounts take only a person's token (a token without one: the WORKSPACE-scope accounts
+// alone, a person's own never). Proposed upstream (twentyhq/twenty#30849); the rules go once
+// Twenty has it (core first).
+const connectedAccounts = `${server}/engine/metadata-modules/connected-account`;
+rule('shared inboxes without a person: sendEmail', named(server, /^modules\/messaging\/message-outbound-manager\/resolvers\/send-email\.resolver\.js$/),
+  '_ts_param(2, (0, _authuserworkspaceiddecorator.AuthUserWorkspaceId)()),',
+  '_ts_param(2, (0, _authuserworkspaceiddecorator.AuthUserWorkspaceId)({ allowUndefined: true })),', 1);
+rule('shared inboxes without a person: myConnectedAccounts', named(connectedAccounts, /^resolvers\/connected-account\.resolver\.js$/),
+  `    (0, _allowsuspendedworkspacedecorator.AllowSuspendedWorkspace)(),
+    _ts_param(0, (0, _authworkspacedecorator.AuthWorkspace)()),
+    _ts_param(1, (0, _authuserworkspaceiddecorator.AuthUserWorkspaceId)()),`,
+  `    (0, _allowsuspendedworkspacedecorator.AllowSuspendedWorkspace)(),
+    _ts_param(0, (0, _authworkspacedecorator.AuthWorkspace)()),
+    _ts_param(1, (0, _authuserworkspaceiddecorator.AuthUserWorkspaceId)({ allowUndefined: true })),`, 1);
+rule('shared inboxes without a person: the accounts listed', named(connectedAccounts, /^utils\/build-connected-account-usable-by-caller-where\.util\.js$/),
+  `        {
+            ...baseWhere,
+            userWorkspaceId
+        }
+    ];`,
+  `        ...userWorkspaceId == null ? [] : [{
+            ...baseWhere,
+            userWorkspaceId
+        }]
+    ];`, 1);
+rule('shared inboxes without a person: the account checked', named(connectedAccounts, /^utils\/is-connected-account-usable-by-caller\.util\.js$/),
+  "connectedAccount.scope === 'WORKSPACE' || connectedAccount.userWorkspaceId === userWorkspaceId;",
+  "connectedAccount.scope === 'WORKSPACE' || userWorkspaceId != null && connectedAccount.userWorkspaceId === userWorkspaceId;", 1);
+
 // the client's name goes in before anything reads those files: first thing in Twenty's server, its
 // worker and its commands
 const entries = ['main.js', 'queue-worker/queue-worker.js', 'command/command.js'].map((path) => `${server}/${path}`);
