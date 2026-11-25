@@ -280,6 +280,28 @@ rule('shared inboxes without a person: the account checked', named(connectedAcco
   "connectedAccount.scope === 'WORKSPACE' || connectedAccount.userWorkspaceId === userWorkspaceId;",
   "connectedAccount.scope === 'WORKSPACE' || userWorkspaceId != null && connectedAccount.userWorkspaceId === userWorkspaceId;", 1);
 
+// a change a person makes to an app's view (a column's width, hidden, moved) on a field another app
+// added to that object (a client's own field on a module's object: Renovatio's stage on Shopify's
+// orders) failed "View field to update parent view object not found": Twenty loads only the apps
+// the change points at directly (the view field's, its view's, its field's), not the app of the
+// view's object, which its check needs. One step further: what those point at too. Reported
+// upstream; the rule goes once Twenty has it (core first).
+rule('an app view of another app\'s object: its object loaded', named(server, /^engine\/workspace-manager\/workspace-migration\/services\/workspace-migration-flat-entity-maps\.service\.js$/),
+  `                    const referencedEntity = targetFlatEntityMaps.byUniversalIdentifier[referencedUniversalIdentifier];
+                    if ((0, _utils.isDefined)(referencedEntity)) {
+                        applicationIds.add(referencedEntity.applicationId);
+                    }`,
+  `                    const referencedEntity = targetFlatEntityMaps.byUniversalIdentifier[referencedUniversalIdentifier];
+                    if ((0, _utils.isDefined)(referencedEntity)) {
+                        applicationIds.add(referencedEntity.applicationId);
+                        for (const next of Object.values(_allmanytoonemetadatarelationsconstant.ALL_MANY_TO_ONE_METADATA_RELATIONS[targetMetadataName] ?? {})){
+                            if (!(0, _utils.isDefined)(next)) continue;
+                            const nextMaps = allRelatedFlatEntityMaps[(0, _getmetadataflatentitymapskeyutil.getMetadataFlatEntityMapsKey)(next.metadataName)];
+                            const nextEntity = nextMaps?.byUniversalIdentifier[referencedEntity[next.universalForeignKey]];
+                            if ((0, _utils.isDefined)(nextEntity)) applicationIds.add(nextEntity.applicationId);
+                        }
+                    }`, 1);
+
 // the client's name goes in before anything reads those files: first thing in Twenty's server, its
 // worker and its commands
 const entries = ['main.js', 'queue-worker/queue-worker.js', 'command/command.js'].map((path) => `${server}/${path}`);
