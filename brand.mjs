@@ -94,9 +94,10 @@ rule('sign-in legal links, without a language', assets,
   (_, path, base) => `return new URL(\`/\${${path}}\`,${base}).toString()`, 1);
 // the tab's icon is the client's logo when it has one: the workspace's comes later, at another
 // address, and the tab would change again for the same picture
+// (2.65: the icon's address is worked out once, for the plain icon and the one with a dot)
 rule('tab icon: the client\'s logo', assets,
-  /rel:"icon",type:"image\/x-icon",href:(\w+\?\.logo\?\w+\(\{imageUrl:\w+\.logo,baseUrl:\w+\}\)\?\?"https:\/\/twentyhq\.github\.io\/placeholder-images\/workspaces\/twenty-logo\.png":\w+)\}/g,
-  (_, workspace) => `rel:"icon",type:"image/x-icon",href:"${LOGO}"||(${workspace})}`, 1);
+  /([\w$]+)=(\(0,[\w$]+\.isNonEmptyString\)\([\w$]+\?\.logo\)\?[\w$]+\(\{imageUrl:[\w$]+\.logo,baseUrl:[\w$]+\}\)\?\?"https:\/\/twentyhq\.github\.io\/placeholder-images\/workspaces\/twenty-logo\.png":[\w$]+),/g,
+  (_, name, workspace) => `${name}="${LOGO}"||(${workspace}),`, 1);
 rule('workspace logo placeholder', assets, '"https://twentyhq.github.io/placeholder-images/workspaces/twenty-logo.png"', webIcon, 11);
 rule('people placeholders (email sync)', assets, /`https:\/\/twentyhq\.github\.io\/placeholder-images\/people\/image-\$\{\w+\}\.png`/g, ourIcon, 1);
 // where records open is the client's (olcrm sets it on every object), not each person's: the
@@ -106,7 +107,7 @@ rule('open records in (the workspace menu)', assets,
 // the workspace menu goes (theme and log out are in Settings, for everyone; the rest was ours or
 // Twenty's): the workspace's logo and name stay in the sidebar, without the menu or its chevron
 rule('workspace menu (gone)', assets,
-  /(([\w$]+)=\(\{shouldHideLabel:([\w$]+)=!1\}\)=>\{const [\w$]+=[\w$]+\(\),[\w$]+=[\w$]+\?-5:5;)(return\(0,([\w$]+)\.jsxs\)\([\w$]+,\{dropdownId:[\w$]+,type:"menu",children:\[\(0,\5\.jsx\)\([\w$]+\.Trigger,\{nativeButton:!1,render:\(0,\5\.jsx\)\(([\w$]+),\{shouldHideLabel:\3\}\),children:\(0,\5\.jsx\)\(([\w$]+),\{shouldHideLabel:\3\}\)\}\),)/g,
+  /(([\w$]+)=\(\{shouldHideLabel:([\w$]+)=!1\}\)=>\{const [^;]*?;)(return\(0,([\w$]+)\.jsxs\)\([\w$]+,\{dropdownId:[\w$]+,type:"menu",children:\[\(0,\5\.jsx\)\([\w$]+\.Trigger,\{nativeButton:!1,render:\(0,\5\.jsx\)\(([\w$]+),\{shouldHideLabel:\3\}\),children:\(0,\5\.jsx\)\(([\w$]+),\{shouldHideLabel:\3\}\)\}\),)/g,
   (_, head, _name, label, rest, jsx, frame, face) => `${head}return(0,${jsx}.jsx)(${frame},{shouldHideLabel:${label},children:(0,${jsx}.jsx)(${face},{shouldHideLabel:${label}})});${rest}`, 1);
 rule('workspace menu: its chevron (gone)', assets,
   /(\(0,([\w$]+)\.jsx\)\([\w$]+,\{children:[\w$]+\?\.displayName\?\?""\}\)\}\)\}\)),\(0,\2\.jsx\)\([\w$]+,\{children:\(0,\2\.jsx\)\([\w$]+,\{size:([\w$]+)\.icon\.size\.md,stroke:\3\.icon\.stroke\.sm\}\)\}\)/g,
@@ -146,50 +147,9 @@ rule('settings menu: documentation (hidden)', assets,
   /\{(label:\w+\._\(\{id:"TvY\/XA"\}\),onClick:\(\)=>\w+\(\w+\(\{locale:\w+\?\.locale\}\)\),Icon:\w+)\}/g, (_, item) => `{${item},isHidden:!0}`, 1);
 // Appearance offers a parody theme, "Salesfarce", with an Enterprise badge: not for clients
 rule('appearance: the Salesfarce theme (hidden)', assets, /,\{value:[\w$]+,label:[\w$]+\._\(\{id:"T3H3GG"\}\)\}/g, '', 1);
-// Replying to an email (the thread's composer, in the side panel or on the thread's page): its body
-// had a height but no scroll, so a long reply ran past the panel, its end out of sight and over the
-// attachments under it. It scrolls
-const replyClasses = [...new Set(assets.flatMap((path) =>
-  [...read(path).matchAll(/name:"StyledFieldsContainer",class:"[\w-]+",propsAsIs:!1\}\),[\w$]+=[\w$]+\("div"\)\(\{name:"StyledBody",class:"([\w-]+)",propsAsIs:!1\}\),[\w$]+=[\w$]+\("div"\)\(\{name:"StyledAttachments",class:"([\w-]+)"/g)]
-    .map(([, body, attachments]) => `${body} ${attachments}`)))].map((pair) => pair.split(' '));
-const [replyBody, replyAttachments] = replyClasses.length === 1 ? replyClasses[0] : ['(?!)', '(?!)'];
-const styles = walk(`${front}/assets`).filter((path) => path.endsWith('.css'));
-rule('email reply: its body scrolls', styles, new RegExp(`\\.${replyBody}\\{([^}]*)\\}`, 'g'),
-  (_, declarations) => `.${replyBody}{${declarations};overflow-y:auto}`, 1);
-// (its attachments a line apart from the text, which used to run under them)
-rule('email reply: attachments apart from the text', styles,
-  new RegExp(`(\\.${replyAttachments}\\{[^}]*padding:)0 (var\\(--t-spacing-3\\)) (var\\(--t-spacing-2\\))`, 'g'),
-  (_, head, side, bottom) => `${head}${bottom} ${side} ${bottom}`, 1);
-// and what one writes there is kept in the browser, for the message it answers (or the record a new
-// email starts from), until it's sent or emptied, a month at most: Twenty kept it only in the page,
-// so a reload, or the side panel opened as a page, lost it. A draft from the mailbox (Gmail's) is
-// opened as Twenty does, unkept
-const draftStore = `__olcrmDraft=(()=>{const P="olcrm:email-draft:",D=2592e6,s=()=>{try{return window.localStorage}catch{return null}};return{key:(r,c)=>P+(r?"reply:"+r:c?c.objectNameSingular+":"+c.recordId:"new"),kept:k=>{try{const v=JSON.parse(s()?.getItem(k)??"null");return v&&Date.now()-v.at<D?v:null}catch{return null}},keep:(k,y,v)=>{try{y?s()?.setItem(k,JSON.stringify({...v,at:Date.now()})):s()?.removeItem(k)}catch{}},forget:k=>{try{s()?.removeItem(k)}catch{}},hasText:b=>typeof b==="string"&&(b.includes('"text":"')||!b.trimStart().startsWith("{")&&b.replace(/<[^>]*>/g,"").trim().length>0)}})()`;
-const sub = (text, pattern, to) => {
-  const out = text.replace(pattern, to);
-  if (out === text) throw new Error(`email reply drafts: ${pattern} not found`);
-  return out;
-};
-rule('email reply: drafts kept', assets,
-  /([\w$]+)=\(\{connectedAccountId:([\w$]+),draftPrefill:([\w$]+),defaultTo:([\w$]+)="",defaultSubject:([\w$]+)="",defaultInReplyTo:([\w$]+),contextRecord:([\w$]+),onSent:([\w$]+)\}\)=>\{const ([\w$]+)=\3\?\.to\?\?\4,([\w$]+)=\3\?\.cc\?\?"",([\w$]+)=\3\?\.bcc\?\?"",([\w$]+)=\3\?\.subject\?\?\5,([\w$]+)=\3\?\.body\?\?"",([\s\S]*?maxRecipients:100\}\})/g,
-  (_, hook, account, prefill, to, subject, inReplyTo, record, onSent, toText, ccText, bccText, subjectText, bodyText, rest) => {
-    const id = (pattern) => {
-      const found = rest.match(pattern);
-      if (!found) throw new Error(`email reply drafts: ${pattern} not found`);
-      return found[1];
-    };
-    // a minified name as a pattern (one may hold a $)
-    const esc = (name) => name.replace(/\$/g, '\\$');
-    const react = id(/\(0,([\w$]+)\.useState\)/);
-    const state = (initial) => id(new RegExp(`\\[([\\w$]+),[\\w$]+\\]=\\(0,${esc(react)}\\.useState\\)\\((?:\\(\\)=>[\\w$]+\\()?${esc(initial)}\\)?\\)`));
-    const [toList, ccList, bccList, subjectNow, bodyNow] = [toText, ccText, bccText, subjectText, bodyText].map(state);
-    const serialize = id(new RegExp(`to:([\\w$]+)\\(${esc(toList)}\\)`));
-    const bodyState = new RegExp(`(\\[${esc(bodyNow)},[\\w$]+\\]=\\(0,${esc(react)}\\.useState\\)\\(${esc(bodyText)}\\),)`);
-    let body = sub(rest, bodyState, (declared) => `${declared}__olcrmKeeping=(0,${react}.useEffect)(()=>{const __olcrmTimer=setTimeout(()=>__olcrmDraft.keep(__olcrmKey,!${prefill}&&__olcrmDraft.hasText(${bodyNow})&&${bodyNow}!==__olcrmFirstBody,{to:${serialize}(${toList}),cc:${serialize}(${ccList}),bcc:${serialize}(${bccList}),subject:${subjectNow},body:${bodyNow}}),400);return()=>clearTimeout(__olcrmTimer)},[${toList},${ccList},${bccList},${subjectNow},${bodyNow}]),`);
-    body = sub(body, new RegExp(`([\\w$]+)&&${esc(onSent)}\\?\\.\\(([\\w$]+)\\)`), (__, sent, thread) => `${sent}&&(__olcrmDraft.forget(__olcrmKey),${onSent}?.(${thread}))`);
-    return `${draftStore},${hook}=({connectedAccountId:${account},draftPrefill:${prefill},defaultTo:${to}="",defaultSubject:${subject}="",defaultInReplyTo:${inReplyTo},contextRecord:${record},onSent:${onSent}})=>{const __olcrmKey=__olcrmDraft.key(${inReplyTo},${record}),__olcrmKept=${prefill}?null:__olcrmDraft.kept(__olcrmKey),__olcrmFirstBody=${prefill}?.body??"",${toText}=${prefill}?.to??__olcrmKept?.to??${to},${ccText}=${prefill}?.cc??__olcrmKept?.cc??"",${bccText}=${prefill}?.bcc??__olcrmKept?.bcc??"",${subjectText}=${prefill}?.subject??__olcrmKept?.subject??${subject},${bodyText}=${prefill}?.body??__olcrmKept?.body??"",${body}`;
-  }, 1);
-rule('help links', [...assets, ...inDir(shared)], /"https:\/\/docs\.twenty\.com(?:\/[^"]*)?"/g, `"${brand.help}"`, 3);
+// Replying to an email: Twenty scrolls a long reply and keeps it while unsent since 2.60 (the
+// rules we had for it went with the upgrade to 2.65, core first)
+rule('help links', [...assets, ...inDir(shared)], /"https:\/\/docs\.twenty\.com(?:\/[^"]*)?"/g, `"${brand.help}"`, 4);
 // company logos from the instance itself (the enrichment module's icons route), not Twenty's service.
 // The web app takes an address without a host for one of its files (/files/…), so it gets the page's
 // origin; the server's copies, which never draw a logo, keep the path
@@ -211,7 +171,7 @@ rule('email translations', named(emails, /^locales\/generated\/[^/]+\.m?js$/), w
 // the server: its messages (email subjects among them), the AI chat and agents
 const serverCode = inDir(server, (path) => !path.startsWith(`${front}/`));
 rule('server translations', named(server, /^engine\/core-modules\/i18n\/locales\/generated\/[^/]+\.js$/), word, NAME, 'some');
-rule('server messages', serverCode, /message: "[^"\n]*\bTwenty\b[^"\n]*"/g, (match) => match.replace(word, NAME), 8);
+rule('server messages', serverCode, /message: "[^"\n]*\bTwenty\b[^"\n]*"/g, (match) => match.replace(word, NAME), 10);
 const prompts = named(server, /^engine\/metadata-modules\/ai\/(ai-chat\/constants\/(chat-system-prompts\.const|workspace-setup(-alternative)?-system-prompt\.constant)|ai-agent\/constants\/agent-run-base-system-prompt\.const|ai-agent-trigger\/constants\/agent-trigger-base-system-prompt\.const)\.js$/);
 rule('AI prompts', prompts, word, NAME, 22);
 // the chat's help search sends the question to Twenty's documentation server: not offered, not
@@ -230,7 +190,7 @@ rule('2FA issuer', named(server, /^engine\/core-modules\/two-factor-authenticati
   `(workspaceDisplayName ? workspaceDisplayName.replace(/\\s*CRM$/i, "") + " CRM" : "${NAME}")`, 2);
 // the MCP server: its name, its instructions to the client's model, its card for directories
 rule('MCP server name', named(server, /^engine\/api\/mcp\/constants\/mcp-server-info\.const\.js$/), "name: 'Twenty MCP Server'", `name: '${NAME} MCP Server'`, 1);
-rule('MCP instructions', named(server, /^engine\/api\/mcp\/utils\/build-mcp-server-instructions\.util\.js$/), word, NAME, 3);
+rule('MCP instructions', named(server, /^engine\/api\/mcp\/utils\/build-mcp-server-instructions\.util\.js$/), word, NAME, 1);
 const mcpCard = named(server, /^engine\/core-modules\/well-known\/utils\/build-mcp-server-card\.util\.js$/);
 rule('MCP card: website', mcpCard, "'https://twenty.com'", `'${brand.website}'`, 1);
 rule('MCP card: name', mcpCard, /\bTwenty CRM\b/g, NAME, 2);
